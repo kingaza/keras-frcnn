@@ -11,6 +11,7 @@ from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
 from keras.layers import Input
 from keras.models import Model
+from keras.utils.data_utils import get_file
 from keras_frcnn import config, data_generators
 from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
@@ -133,10 +134,16 @@ model_classifier = Model([img_input, roi_input], classifier)
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
+# download weights if there is not available
+KERAS_MODEL_BASEURL = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/'
+weights_path = get_file(C.base_net_weights,
+                        KERAS_MODEL_BASEURL + C.base_net_weights,
+                        cache_subdir='models')
+                                    
 try:
-	print('loading weights from {}'.format(C.base_net_weights))
-	model_rpn.load_weights(C.base_net_weights, by_name=True)
-	model_classifier.load_weights(C.base_net_weights, by_name=True)
+	print('loading weights {}'.format(C.base_net_weights))
+	model_rpn.load_weights(weights_path, by_name=True)
+	model_classifier.load_weights(weights_path, by_name=True)
 except:
 	print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
